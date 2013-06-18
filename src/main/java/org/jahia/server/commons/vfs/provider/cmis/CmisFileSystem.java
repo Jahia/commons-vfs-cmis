@@ -33,6 +33,20 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         // connection settings - we are connecting to a public cmis repo,
         // using the AtomPUB binding
         System.out.println("rootName=" + rootName);
+        String bindingType = CmisFileSystemConfigBuilder.getInstance().getSessionParameter(fileSystemOptions, SessionParameter.BINDING_TYPE);
+        if (BindingType.ATOMPUB.value().equals(bindingType)) {
+
+        } else if (BindingType.WEBSERVICES.value().equals(bindingType)) {
+
+        } else if (BindingType.BROWSER.value().equals(bindingType)) {
+
+        } else if (BindingType.LOCAL.value().equals(bindingType)) {
+
+        } else if (BindingType.CUSTOM.value().equals(bindingType)) {
+
+        } else {
+
+        }
         parameter.put(SessionParameter.ATOMPUB_URL, " http://repo.opencmis.org/inmemory/atom/");
         parameter.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
 
