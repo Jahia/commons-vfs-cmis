@@ -36,6 +36,7 @@ public class CmisFileProviderTest {
     @Test
     public void testConnection() throws FileSystemException {
         FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        Assert.assertNotNull("Root file should not be null", rootFile);
     }
 
     @Test
@@ -92,17 +93,19 @@ public class CmisFileProviderTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
+        System.out.println("Shutting down the test environment...");
+
         // force the SoftRefFilesChache to free all files
-        System.err.println(".");
+        System.out.println(".");
         System.gc();
         Thread.sleep(1000);
-        System.err.println(".");
+        System.out.println(".");
         System.gc();
         Thread.sleep(1000);
-        System.err.println(".");
+        System.out.println(".");
         System.gc();
         Thread.sleep(1000);
-        System.err.println(".");
+        System.out.println(".");
         System.gc();
         Thread.sleep(1000);
 
@@ -194,11 +197,10 @@ public class CmisFileProviderTest {
     }
 
     private static Thread[] diffThreadSnapshot(Thread[] startThreadSnapshot, Thread[] endThreadSnapshot) {
-        List diff = new ArrayList(10);
+        List<Thread> diff = new ArrayList<Thread>(10);
 
         nextEnd:
         for (int iterEnd = 0; iterEnd < endThreadSnapshot.length; iterEnd++) {
-            nextStart:
             for (int iterStart = 0; iterStart < startThreadSnapshot.length; iterStart++) {
                 if (startThreadSnapshot[iterStart] == endThreadSnapshot[iterEnd]) {
                     continue nextEnd;
