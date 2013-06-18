@@ -1,0 +1,8 @@
+<providers>
+
+    <provider class-name="org.jahia.server.commons.vfs.provider.cmis.CmisFileProvider">
+        <scheme name="cmis"/>
+        <if-available class-name="jcifs.smb.SmbFile"/>
+    </provider>
+
+</providers>
