@@ -50,7 +50,7 @@ public class CmisFileProviderTest {
     @Test
     public void testRecursiveWalk() throws FileSystemException {
         FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
-        int depth = 4;
+        int depth = 2;
         walkChildren(rootFile, depth);
     }
 
@@ -73,6 +73,7 @@ public class CmisFileProviderTest {
         FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
         FileObject newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
         newFolder.createFolder();
+        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
         Assert.assertTrue("New folder "+newFolder +" does not exist !", newFolder.exists());
     }
 
