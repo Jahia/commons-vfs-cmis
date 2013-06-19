@@ -14,7 +14,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,37 @@ public class CmisFileProviderTest {
         FileObject newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
         newFolder.createFolder();
         newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
-        Assert.assertTrue("New folder "+newFolder +" does not exist !", newFolder.exists());
+        Assert.assertTrue("New folder " + newFolder + " does not exist !", newFolder.exists());
+        newFolder.delete();
+        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
+        Assert.assertFalse("New folder " + newFolder + " still exists !", newFolder.exists());
+    }
+
+    @Test
+    public void testFileCreate() throws IOException {
+        FileObject newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile.txt");
+        newFile.createFile();
+        OutputStream outputStream = newFile.getContent().getOutputStream();
+        String testContent = "Test content for the new CMIS file";
+        byte[] byteArray = testContent.getBytes("UTF-8");
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
+        int curByte = -1;
+        while ((curByte = byteArrayInputStream.read()) > -1) {
+            outputStream.write(curByte);
+        }
+        outputStream.close();
+        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile.txt");
+        InputStream inputStream = newFile.getContent().getInputStream();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        while ((curByte = inputStream.read()) > -1) {
+            byteArrayOutputStream.write(curByte);
+        }
+        inputStream.close();
+        String readContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
+        Assert.assertEquals("The content of the file does not match expected value", testContent, readContent);
+        newFile.delete();
+        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile.txt");
+        Assert.assertFalse("New folder " + newFile + " still exists !", newFile.exists());
     }
 
 
