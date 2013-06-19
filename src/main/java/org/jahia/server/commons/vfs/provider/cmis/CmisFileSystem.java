@@ -1,8 +1,6 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
-import org.apache.chemistry.opencmis.client.api.Repository;
-import org.apache.chemistry.opencmis.client.api.Session;
-import org.apache.chemistry.opencmis.client.api.SessionFactory;
+import org.apache.chemistry.opencmis.client.api.*;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
@@ -23,6 +21,8 @@ import java.util.Map;
 public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
 
     Session session = null;
+    String rootFolderPath = null;
+    String cmisEntryPointUri = null;
 
     protected CmisFileSystem(FileName rootName, FileSystemOptions fileSystemOptions) {
         super(rootName, null, fileSystemOptions);
@@ -47,7 +47,11 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         } else {
 
         }
-        parameter.put(SessionParameter.ATOMPUB_URL, " http://repo.opencmis.org/inmemory/atom/");
+        parameter.put(SessionParameter.ATOMPUB_URL, "http://repo.opencmis.org/inmemory/atom/");
+        cmisEntryPointUri = "http://repo.opencmis.org/inmemory/atom/";
+        if (cmisEntryPointUri.endsWith("/")) {
+            cmisEntryPointUri = cmisEntryPointUri.substring(0, cmisEntryPointUri.length()-1);
+        }
         parameter.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
 
         // find all the repositories at this URL - there should only be one.
@@ -61,11 +65,36 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         parameter.put(SessionParameter.REPOSITORY_ID, repository.getId());
         session = sessionFactory.createSession(parameter);
 
+        Folder rootFolder = session.getRootFolder();
+        rootFolderPath = rootFolder.getPath();
+
     }
 
     @Override
     protected FileObject createFile(FileName fileName) throws Exception {
-        return new CmisFileObject(fileName, this, session.getRootFolder());
+        CmisFileName cmisFileName = (CmisFileName) fileName;
+        String cmisUri = cmisFileName.getCmisURI();
+        String cmisPath = null;
+        boolean byID = true;
+        if (cmisUri.startsWith(cmisEntryPointUri)) {
+            cmisPath = cmisUri.substring(cmisEntryPointUri.length());
+            byID = false;
+            if (cmisPath.length() == 0) {
+                cmisPath = "/";
+                byID = false;
+            }
+        }
+        CmisObject cmisObject = null;
+        if (byID) {
+            cmisObject = session.getObjectByPath(cmisUri);
+        } else {
+            cmisObject = session.getObjectByPath(cmisPath);
+        }
+        if (cmisObject != null) {
+            return new CmisFileObject(fileName, this, cmisObject);
+        } else {
+            return null;
+        }
     }
 
     @Override

@@ -50,7 +50,7 @@ public class CmisFileProviderTest {
     @Test
     public void testRecursiveWalk() throws FileSystemException {
         FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
-        int depth = 2;
+        int depth = 4;
         walkChildren(rootFile, depth);
     }
 

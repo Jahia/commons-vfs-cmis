@@ -43,7 +43,14 @@ public class CmisFileObject extends AbstractFileObject
             Folder folder = (Folder) cmisObject;
             ItemIterable<CmisObject> childCmisObjects = folder.getChildren();
             for (CmisObject childCmisObject : childCmisObjects) {
-                childrenUris.add(childCmisObject.getId());
+                if (childCmisObject instanceof FileableCmisObject) {
+                    FileableCmisObject fileableCmisObject = (FileableCmisObject) childCmisObject;
+                    if (fileableCmisObject.getName() != null) {
+                        childrenUris.add(fileableCmisObject.getName());
+                    }
+                } else {
+                    childrenUris.add("?id=" + childCmisObject.getId());
+                }
             }
         }
         return childrenUris.toArray(new String[childrenUris.size()]);
