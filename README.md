@@ -12,6 +12,7 @@ There is a lot do to to make this implementation usable :
 - Properly implement end point and repository support
 - Support more bindings
 - Support authentication
+- Implement proper reading/writing support
 
 Of course this implementation will never be capable of supporting searching, since Commons VFS doesn't offer an API
 for that.

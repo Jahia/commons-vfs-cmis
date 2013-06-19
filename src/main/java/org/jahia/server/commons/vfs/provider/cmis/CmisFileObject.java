@@ -18,14 +18,19 @@ public class CmisFileObject extends AbstractFileObject
         implements FileObject {
 
     private CmisObject cmisObject;
+    private CmisFileSystem cmisFileSystem;
 
     protected CmisFileObject(FileName name, AbstractFileSystem fs, CmisObject cmisObject) {
         super(name, fs);
         this.cmisObject = cmisObject;
+        this.cmisFileSystem = (CmisFileSystem) fs;
     }
 
     @Override
     protected FileType doGetType() throws Exception {
+        if (cmisObject == null) {
+            return FileType.IMAGINARY;
+        }
         ObjectType cmisObjectType = cmisObject.getType();
         if (cmisObjectType instanceof FolderType) {
             return FileType.FOLDER;
@@ -38,6 +43,9 @@ public class CmisFileObject extends AbstractFileObject
 
     @Override
     protected String[] doListChildren() throws Exception {
+        if (cmisObject == null) {
+            return new String[0];
+        }
         List<String> childrenUris = new ArrayList<String>();
         if (cmisObject instanceof Folder) {
             Folder folder = (Folder) cmisObject;
@@ -58,6 +66,9 @@ public class CmisFileObject extends AbstractFileObject
 
     @Override
     protected long doGetContentSize() throws Exception {
+        if (cmisObject == null) {
+            return 0;
+        }
         if (cmisObject instanceof Document) {
             Document document = (Document) cmisObject;
             return document.getContentStreamLength();
@@ -67,10 +78,18 @@ public class CmisFileObject extends AbstractFileObject
 
     @Override
     protected InputStream doGetInputStream() throws Exception {
+        if (cmisObject == null) {
+            return null;
+        }
         if (cmisObject instanceof Document) {
             Document document = (Document) cmisObject;
             return document.getContentStream().getStream();
         }
         return null;
+    }
+
+    @Override
+    protected void doCreateFolder() throws Exception {
+        // first we must find the first existing ancestor and create all the missing folders
     }
 }

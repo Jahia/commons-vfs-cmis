@@ -54,6 +54,29 @@ public class CmisFileProviderTest {
         walkChildren(rootFile, depth);
     }
 
+    @Test
+    public void testBasicProperties() throws FileSystemException {
+        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        for (FileObject rootChild : rootFile.getChildren()) {
+            if (rootChild.getType() == FileType.FILE) {
+                System.out.println("file=" + rootChild + " size=" + rootChild.getContent().getSize());
+            } else if (rootChild.getType() == FileType.FOLDER) {
+                System.out.println("folder=" + rootChild);
+            } else {
+                System.out.println("child=" + rootChild + " (" + rootChild.getType().toString() + ")");
+            }
+        }
+    }
+
+    @Test
+    public void testFolderCreate() throws FileSystemException {
+        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        FileObject newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
+        newFolder.createFolder();
+        Assert.assertTrue("New folder "+newFolder +" does not exist !", newFolder.exists());
+    }
+
+
     private void walkChildren(FileObject fileObject, int depth) throws FileSystemException {
         if (depth == 0) {
             return;
