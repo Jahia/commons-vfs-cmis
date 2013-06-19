@@ -1,5 +1,6 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
+import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.provider.URLFileName;
 
@@ -35,5 +36,18 @@ public class CmisFileName extends URLFileName {
             cmisURI = buffer.toString();
         }
         return cmisURI;
+    }
+
+    public FileName createName(final String absPath, FileType type)
+    {
+        return new CmisFileName(getScheme(),
+            getHostName(),
+            getPort(),
+            getDefaultPort(),
+            getUserName(),
+            getPassword(),
+            absPath,
+            type,
+            getQueryString());
     }
 }

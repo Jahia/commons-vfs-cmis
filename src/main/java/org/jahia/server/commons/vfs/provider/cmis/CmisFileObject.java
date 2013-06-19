@@ -1,6 +1,7 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
 import org.apache.chemistry.opencmis.client.api.*;
+import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
@@ -9,7 +10,9 @@ import org.apache.commons.vfs.provider.AbstractFileSystem;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Commons VFS FileObject for a CMIS object
@@ -90,6 +93,14 @@ public class CmisFileObject extends AbstractFileObject
 
     @Override
     protected void doCreateFolder() throws Exception {
-        // first we must find the first existing ancestor and create all the missing folders
+        CmisFileName cmisFileName = (CmisFileName) getName();
+        CmisFileObject oarentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(cmisFileName.getParent());
+        if (oarentCmisFileObject.cmisObject instanceof Folder) {
+            Folder parentFolder = (Folder) oarentCmisFileObject.cmisObject;
+            Map<String,String> folderProperties = new HashMap<String, String>();
+            folderProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
+            folderProperties.put(PropertyIds.NAME, cmisFileName.getBaseName());
+            parentFolder.createFolder(folderProperties);
+        }
     }
 }
