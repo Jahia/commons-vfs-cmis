@@ -2,13 +2,17 @@ package org.jahia.server.commons.vfs.provider.cmis;
 
 import org.apache.chemistry.opencmis.client.api.*;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.data.ContentStream;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.provider.AbstractFileObject;
 import org.apache.commons.vfs.provider.AbstractFileSystem;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +31,10 @@ public class CmisFileObject extends AbstractFileObject
         super(name, fs);
         this.cmisObject = cmisObject;
         this.cmisFileSystem = (CmisFileSystem) fs;
+    }
+
+    public CmisObject getCmisObject() {
+        return cmisObject;
     }
 
     @Override
@@ -94,13 +102,29 @@ public class CmisFileObject extends AbstractFileObject
     @Override
     protected void doCreateFolder() throws Exception {
         CmisFileName cmisFileName = (CmisFileName) getName();
-        CmisFileObject oarentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(cmisFileName.getParent());
-        if (oarentCmisFileObject.cmisObject instanceof Folder) {
-            Folder parentFolder = (Folder) oarentCmisFileObject.cmisObject;
+        CmisFileObject parentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(cmisFileName.getParent());
+        if (parentCmisFileObject.cmisObject instanceof Folder) {
+            Folder parentFolder = (Folder) parentCmisFileObject.cmisObject;
             Map<String,String> folderProperties = new HashMap<String, String>();
             folderProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
             folderProperties.put(PropertyIds.NAME, cmisFileName.getBaseName());
             parentFolder.createFolder(folderProperties);
         }
+    }
+
+    @Override
+    protected Map doGetAttributes() throws Exception {
+        List<Property<?>> cmisProperties = cmisObject.getProperties();
+        Map attributes = new HashMap();
+        for (Property<?> cmisProperty : cmisProperties) {
+            attributes.put(cmisProperty.getLocalName(), cmisProperty.getValuesAsString());
+        }
+        return attributes;
+    }
+
+    @Override
+    protected OutputStream doGetOutputStream(boolean bAppend) throws Exception {
+        // @todo implement real mime type handling.
+        return new CmisOutputStream(this, cmisFileSystem, "application/octet-stream");
     }
 }
