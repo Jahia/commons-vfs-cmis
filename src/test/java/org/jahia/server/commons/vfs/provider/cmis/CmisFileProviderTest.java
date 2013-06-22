@@ -150,6 +150,9 @@ public class CmisFileProviderTest {
 
         String testCmisUri = System.getProperty("test.cmis.uri");
         if (testCmisUri != null) {
+            if (!testCmisUri.endsWith("/")) {
+                testCmisUri += "/";
+            }
             System.out.println("Found custom URI on command line for CMIS repository : " + testCmisUri);
             cmisEndPointUri = testCmisUri;
         }

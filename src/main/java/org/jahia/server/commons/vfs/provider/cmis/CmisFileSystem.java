@@ -66,7 +66,17 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
             if (byID) {
                 cmisObject = cmisSession.getObject(cmisUri);
             } else {
-                cmisObject = cmisSession.getObjectByPath(cmisPath);
+                /*
+                String[] pathParts = cmisPath.split("/");
+                StringBuilder encodedPath = new StringBuilder();
+                encodedPath.append("/");
+                for (String pathPart : pathParts) {
+                    encodedPath.append(URLEncoder.encode(pathPart, "UTF-8"));
+                    encodedPath.append("/");
+                }
+                */
+                StringBuilder encodedPath = new StringBuilder(cmisPath);
+                cmisObject = cmisSession.getObjectByPath(encodedPath.toString());
             }
         } catch (CmisObjectNotFoundException confe) {
             cmisObject = null;
@@ -99,6 +109,12 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
             cmisEntryPointUri = cmisEntryPointUri.substring(0, cmisEntryPointUri.length() - 1);
         }
         cmisParameters.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
+        if (cmisFileName.getUserName() != null) {
+            cmisParameters.put(SessionParameter.USER, cmisFileName.getUserName());
+        }
+        if (cmisFileName.getPassword() != null) {
+            cmisParameters.put(SessionParameter.PASSWORD, cmisFileName.getPassword());
+        }
 
         // find all the repositories at this URL - there should only be one.
         List<Repository> repositories = sessionFactory.getRepositories(cmisParameters);
