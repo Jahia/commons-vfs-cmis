@@ -1,5 +1,6 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
+import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
@@ -22,6 +23,7 @@ public class CmisOutputStream extends OutputStream {
     private CmisFileObject cmisFileObject;
     private CmisFileSystem cmisFileSystem;
     private String mimeType;
+    private boolean alreadyClosed = false;
 
     public CmisOutputStream(CmisFileObject cmisFileObject, CmisFileSystem cmisFileSystem, String mimeType) {
         this.cmisFileObject = cmisFileObject;
@@ -36,6 +38,10 @@ public class CmisOutputStream extends OutputStream {
 
     @Override
     public void close() throws IOException {
+        if (alreadyClosed) {
+            super.close();
+            return;
+        }
         if (cmisFileObject.getCmisObject() == null) {
             CmisFileName cmisFileName = (CmisFileName) cmisFileObject.getName();
             CmisFileObject parentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(cmisFileName.getParent());
@@ -47,15 +53,23 @@ public class CmisOutputStream extends OutputStream {
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
                 ContentStream contentStream = cmisFileSystem.getSession(cmisFileName).getObjectFactory().createContentStream(cmisFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
 
-                Map<String,String> documentProperties = new HashMap<String, String>();
+                Map<String, String> documentProperties = new HashMap<String, String>();
                 documentProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
                 documentProperties.put(PropertyIds.NAME, cmisFileName.getBaseName());
 
-                parentFolder.createDocument(documentProperties, contentStream, VersioningState.MAJOR);
+                Document document = parentFolder.createDocument(documentProperties, contentStream, VersioningState.NONE);
+                cmisFileObject.setCmisObject(document);
             }
         } else {
-            // @todo implement content overwriting
+            CmisFileName cmisFileName = (CmisFileName) cmisFileObject.getName();
+            Document document = (Document) cmisFileObject.getCmisObject();
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            byteArrayOutputStream.close();
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
+            ContentStream contentStream = cmisFileSystem.getSession(cmisFileName).getObjectFactory().createContentStream(cmisFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
+            document.setContentStream(contentStream, true);
         }
+        alreadyClosed = true;
         super.close();    //To change body of overridden methods use File | Settings | File Templates.
     }
 }

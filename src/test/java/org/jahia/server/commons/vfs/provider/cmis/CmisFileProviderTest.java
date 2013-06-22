@@ -71,18 +71,21 @@ public class CmisFileProviderTest {
     @Test
     public void testFolderCreate() throws FileSystemException {
         FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
-        FileObject newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
+        long timestamp = System.currentTimeMillis();
+        FileObject newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        Assert.assertFalse("Folder " + newFolder + " already exists", newFolder.exists());
         newFolder.createFolder();
-        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
+        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
         Assert.assertTrue("New folder " + newFolder + " does not exist !", newFolder.exists());
         newFolder.delete();
-        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2");
+        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
         Assert.assertFalse("New folder " + newFolder + " still exists !", newFolder.exists());
     }
 
     @Test
     public void testFileCreate() throws IOException {
-        FileObject newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile.txt");
+        long timestamp = System.currentTimeMillis();
+        FileObject newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile-" + timestamp + ".txt");
         newFile.createFile();
         OutputStream outputStream = newFile.getContent().getOutputStream();
         String testContent = "Test content for the new CMIS file";
@@ -93,7 +96,7 @@ public class CmisFileProviderTest {
             outputStream.write(curByte);
         }
         outputStream.close();
-        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile.txt");
+        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile-" + timestamp + ".txt");
         InputStream inputStream = newFile.getContent().getInputStream();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         while ((curByte = inputStream.read()) > -1) {
@@ -103,7 +106,7 @@ public class CmisFileProviderTest {
         String readContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
         Assert.assertEquals("The content of the file does not match expected value", testContent, readContent);
         newFile.delete();
-        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile.txt");
+        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile-" + timestamp + ".txt");
         Assert.assertFalse("New folder " + newFile + " still exists !", newFile.exists());
     }
 

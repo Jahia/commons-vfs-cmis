@@ -5,10 +5,7 @@ import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.commons.vfs.FileName;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystem;
-import org.apache.commons.vfs.FileSystemOptions;
+import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.AbstractFileSystem;
 
 import java.util.Collection;
@@ -24,7 +21,8 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
     Session session = null;
     String rootFolderPath = null;
     String cmisEntryPointUri = null;
-    Map<String,String> cmisParameters = new HashMap<String,String>();
+    Map<String, String> cmisParameters = new HashMap<String, String>();
+    CmisFileObject rootCmisFileObject = null;
 
     protected CmisFileSystem(FileName rootName, FileSystemOptions fileSystemOptions) {
         super(rootName, null, fileSystemOptions);
@@ -81,6 +79,11 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         caps.addAll(CmisFileProvider.capabilities);
     }
 
+    @Override
+    public FileObject getRoot() throws FileSystemException {
+        return rootCmisFileObject;
+    }
+
     public Session getSession(CmisFileName cmisFileName) {
         if (session != null) {
             return session;
@@ -93,7 +96,7 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         }
         cmisEntryPointUri = cmisParameters.get(SessionParameter.ATOMPUB_URL);
         if (cmisEntryPointUri.endsWith("/")) {
-            cmisEntryPointUri = cmisEntryPointUri.substring(0, cmisEntryPointUri.length()-1);
+            cmisEntryPointUri = cmisEntryPointUri.substring(0, cmisEntryPointUri.length() - 1);
         }
         cmisParameters.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
 
@@ -109,6 +112,7 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         session = sessionFactory.createSession(cmisParameters);
 
         Folder rootFolder = session.getRootFolder();
+        rootCmisFileObject = new CmisFileObject(getRootName(), this, rootFolder);
         rootFolderPath = rootFolder.getPath();
         return session;
     }
