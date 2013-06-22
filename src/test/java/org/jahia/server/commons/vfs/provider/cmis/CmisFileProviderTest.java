@@ -33,15 +33,17 @@ public class CmisFileProviderTest {
     private static Thread[] startThreadSnapshot;
     private static Thread[] endThreadSnapshot;
 
+    private static String cmisEndPointUri = "cmis://repo.opencmis.org/inmemory/atom/";
+
     @Test
     public void testConnection() throws FileSystemException {
-        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         Assert.assertNotNull("Root file should not be null", rootFile);
     }
 
     @Test
     public void testRootChildren() throws FileSystemException {
-        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         for (FileObject rootChild : rootFile.getChildren()) {
             System.out.println("child=" + rootChild);
         }
@@ -49,14 +51,14 @@ public class CmisFileProviderTest {
 
     @Test
     public void testRecursiveWalk() throws FileSystemException {
-        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         int depth = 2;
         walkChildren(rootFile, depth);
     }
 
     @Test
     public void testBasicProperties() throws FileSystemException {
-        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         for (FileObject rootChild : rootFile.getChildren()) {
             if (rootChild.getType() == FileType.FILE) {
                 System.out.println("file=" + rootChild + " size=" + rootChild.getContent().getSize());
@@ -70,22 +72,22 @@ public class CmisFileProviderTest {
 
     @Test
     public void testFolderCreate() throws FileSystemException {
-        FileObject rootFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/");
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         long timestamp = System.currentTimeMillis();
-        FileObject newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        FileObject newFolder = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
         Assert.assertFalse("Folder " + newFolder + " already exists", newFolder.exists());
         newFolder.createFolder();
-        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        newFolder = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
         Assert.assertTrue("New folder " + newFolder + " does not exist !", newFolder.exists());
         newFolder.delete();
-        newFolder = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        newFolder = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
         Assert.assertFalse("New folder " + newFolder + " still exists !", newFolder.exists());
     }
 
     @Test
     public void testFileCreate() throws IOException {
         long timestamp = System.currentTimeMillis();
-        FileObject newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile-" + timestamp + ".txt");
+        FileObject newFile = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt");
         newFile.createFile();
         OutputStream outputStream = newFile.getContent().getOutputStream();
         String testContent = "Test content for the new CMIS file";
@@ -96,7 +98,7 @@ public class CmisFileProviderTest {
             outputStream.write(curByte);
         }
         outputStream.close();
-        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile-" + timestamp + ".txt");
+        newFile = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt");
         InputStream inputStream = newFile.getContent().getInputStream();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         while ((curByte = inputStream.read()) > -1) {
@@ -106,7 +108,7 @@ public class CmisFileProviderTest {
         String readContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
         Assert.assertEquals("The content of the file does not match expected value", testContent, readContent);
         newFile.delete();
-        newFile = manager.resolveFile("cmis://repo.opencmis.org/inmemory/atom/commons-vfs-testfile-" + timestamp + ".txt");
+        newFile = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt");
         Assert.assertFalse("New folder " + newFile + " still exists !", newFile.exists());
     }
 
@@ -146,6 +148,13 @@ public class CmisFileProviderTest {
         manager.init();
         manager.addProvider("cmis", new CmisFileProvider());
 
+        String testCmisUri = System.getProperty("test.cmis.uri");
+        if (testCmisUri != null) {
+            System.out.println("Found custom URI on command line for CMIS repository : " + testCmisUri);
+            cmisEndPointUri = testCmisUri;
+        }
+
+        System.out.println("Using CMIS repository " + cmisEndPointUri + "...");
     }
 
     @AfterClass
