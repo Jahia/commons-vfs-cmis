@@ -1,7 +1,9 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
 import org.apache.chemistry.opencmis.client.api.Document;
+import org.apache.chemistry.opencmis.client.api.DocumentType;
 import org.apache.chemistry.opencmis.client.api.Folder;
+import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -57,7 +59,13 @@ public class CmisOutputStream extends OutputStream {
                 documentProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
                 documentProperties.put(PropertyIds.NAME, cmisFileName.getBaseName());
 
-                Document document = parentFolder.createDocument(documentProperties, contentStream, VersioningState.NONE);
+                DocumentType documentType = (DocumentType) cmisFileSystem.getSession(cmisFileName).getTypeDefinition("cmis:document");
+                Document document = null;
+                if (documentType.isVersionable()) {
+                    document = parentFolder.createDocument(documentProperties, contentStream, VersioningState.MAJOR);
+                } else {
+                    document = parentFolder.createDocument(documentProperties, contentStream, VersioningState.NONE);
+                }
                 cmisFileObject.setCmisObject(document);
             }
         } else {
@@ -67,7 +75,14 @@ public class CmisOutputStream extends OutputStream {
             byteArrayOutputStream.close();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
             ContentStream contentStream = cmisFileSystem.getSession(cmisFileName).getObjectFactory().createContentStream(cmisFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
-            document.setContentStream(contentStream, true);
+            DocumentType documentType = (DocumentType) cmisFileSystem.getSession(cmisFileName).getTypeDefinition("cmis:document");
+            if (documentType.isVersionable()) {
+                document = (Document) cmisFileSystem.getSession(cmisFileName).getObject(document.checkOut());
+                ObjectId objectId = document.checkIn(true, null, contentStream, "VFS update");
+                cmisFileObject.setCmisObject(cmisFileSystem.getSession(cmisFileName).getObject(objectId));
+            } else {
+                document.setContentStream(contentStream, true);
+            }
         }
         alreadyClosed = true;
         super.close();    //To change body of overridden methods use File | Settings | File Templates.

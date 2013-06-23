@@ -112,7 +112,6 @@ public class CmisFileProviderTest {
         Assert.assertFalse("New folder " + newFile + " still exists !", newFile.exists());
     }
 
-
     private void walkChildren(FileObject fileObject, int depth) throws FileSystemException {
         if (depth == 0) {
             return;

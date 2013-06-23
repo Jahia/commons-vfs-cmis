@@ -38,20 +38,24 @@ public class CmisFileNameParser extends URLFileNameParser {
         String queryString = UriParser.extractQueryString(name);
 
         // Decode and normalise the file name
-        UriParser.canonicalizePath(name, 0, name.length(), this);
+        try {
+            UriParser.canonicalizePath(name, 0, name.length(), this);
+        } catch (FileSystemException fse) {
+            System.out.println("Error canonicalizing path: " + name);
+        }
         UriParser.fixSeparators(name);
         FileType fileType = UriParser.normalisePath(name);
         final String path = name.toString();
 
         return new CmisFileName(
-            auth.scheme,
-            auth.hostName,
-            auth.port,
-            getDefaultPort(),
-            auth.userName,
-            auth.password,
-            path,
-            fileType,
-            queryString);
+                auth.scheme,
+                auth.hostName,
+                auth.port,
+                getDefaultPort(),
+                auth.userName,
+                auth.password,
+                path,
+                fileType,
+                queryString);
     }
 }
