@@ -30,5 +30,12 @@ mvn clean install -Dtest.cmis.uri=cmis://admin:admin@cmis.alfresco.com/cmisatom
 
 More Alfresco CMIS end points are available here : http://cmis.alfresco.com
 
+Ideas :
+-------
+- We might try to implement searching using a query string such as :
+  cmis://admin:admin@cmis.alfresco.com/cmisatom?q=SELECT * FROM cmis:document
+  or something like that.
+
+
 Contributors are more than welcome !
 
