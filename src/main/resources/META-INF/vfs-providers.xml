@@ -2,7 +2,7 @@
 
     <provider class-name="org.jahia.server.commons.vfs.provider.cmis.CmisFileProvider">
         <scheme name="cmis"/>
-        <if-available class-name="jcifs.smb.SmbFile"/>
+        <if-available class-name="org.apache.chemistry.opencmis.client.api.CmisObject"/>
     </provider>
 
 </providers>

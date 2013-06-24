@@ -143,4 +143,9 @@ public class CmisFileObject extends AbstractFileObject
         // @todo implement real mime type handling.
         return new CmisOutputStream(this, cmisFileSystem, "application/octet-stream");
     }
+
+    @Override
+    protected long doGetLastModifiedTime() throws Exception {
+        return cmisObject.getLastModificationDate().getTimeInMillis();
+    }
 }
