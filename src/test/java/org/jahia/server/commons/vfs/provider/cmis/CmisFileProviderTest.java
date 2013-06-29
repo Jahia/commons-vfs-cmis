@@ -52,8 +52,11 @@ public class CmisFileProviderTest {
     @Test
     public void testRecursiveWalk() throws FileSystemException {
         FileObject rootFile = manager.resolveFile(cmisEndPointUri);
-        int depth = 2;
-        walkChildren(rootFile, depth);
+        int depth = 4;
+        long startTime = System.currentTimeMillis();
+        long childrenFound = walkChildren(rootFile, depth);
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("Walked " + childrenFound + " children in " + totalTime + "ms.");
     }
 
     @Test
@@ -74,20 +77,30 @@ public class CmisFileProviderTest {
     public void testFolderCreate() throws FileSystemException {
         FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         long timestamp = System.currentTimeMillis();
-        FileObject newFolder = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        String folderUri = cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp;
+        testFolderCreateAndDelete(folderUri);
+    }
+
+    private void testFolderCreateAndDelete(String folderUri) throws FileSystemException {
+        FileObject newFolder = manager.resolveFile(folderUri);
         Assert.assertFalse("Folder " + newFolder + " already exists", newFolder.exists());
         newFolder.createFolder();
-        newFolder = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        newFolder = manager.resolveFile(folderUri);
         Assert.assertTrue("New folder " + newFolder + " does not exist !", newFolder.exists());
         newFolder.delete();
-        newFolder = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp);
+        newFolder = manager.resolveFile(folderUri);
         Assert.assertFalse("New folder " + newFolder + " still exists !", newFolder.exists());
     }
 
     @Test
     public void testFileCreate() throws IOException {
         long timestamp = System.currentTimeMillis();
-        FileObject newFile = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt");
+        String fileUri = cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt";
+        testFileCreateAndDelete(fileUri);
+    }
+
+    private void testFileCreateAndDelete(String fileUri) throws IOException {
+        FileObject newFile = manager.resolveFile(fileUri);
         newFile.createFile();
         OutputStream outputStream = newFile.getContent().getOutputStream();
         String testContent = "Test content for the new CMIS file";
@@ -98,7 +111,7 @@ public class CmisFileProviderTest {
             outputStream.write(curByte);
         }
         outputStream.close();
-        newFile = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt");
+        newFile = manager.resolveFile(fileUri);
         InputStream inputStream = newFile.getContent().getInputStream();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         while ((curByte = inputStream.read()) > -1) {
@@ -108,20 +121,31 @@ public class CmisFileProviderTest {
         String readContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
         Assert.assertEquals("The content of the file does not match expected value", testContent, readContent);
         newFile.delete();
-        newFile = manager.resolveFile(cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt");
+        newFile = manager.resolveFile(fileUri);
         Assert.assertFalse("New folder " + newFile + " still exists !", newFile.exists());
     }
 
-    private void walkChildren(FileObject fileObject, int depth) throws FileSystemException {
+    @Test
+    public void testEncodingIssues() throws IOException {
+        long timestamp = System.currentTimeMillis();
+        String folderUri = cmisEndPointUri + "commons-vfs-testfolder1-ÇÇÇÇÇ/éàèöäüe-" + timestamp;
+        testFolderCreateAndDelete(folderUri);
+        String fileUri = cmisEndPointUri + "commons-vfs-testfile-" + timestamp + "-éàè±“#Ç¿.txt";
+        testFileCreateAndDelete(fileUri);
+    }
+
+    private long walkChildren(FileObject fileObject, int depth) throws FileSystemException {
         if (depth == 0) {
-            return;
+            return 0;
         }
         System.out.println(fileObject.getURL().toString() + " (" + fileObject.getType() + ")");
+        long childrenFound = 1;
         if (fileObject.getType() == FileType.FOLDER) {
             for (FileObject childFileObject : fileObject.getChildren()) {
-                walkChildren(childFileObject, depth - 1);
+                childrenFound += walkChildren(childFileObject, depth - 1);
             }
         }
+        return childrenFound;
     }
 
     @BeforeClass
