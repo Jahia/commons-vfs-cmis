@@ -13,6 +13,7 @@ import org.apache.commons.vfs.provider.VfsComponentContext;
 public class CmisFileNameParser extends URLFileNameParser {
 
     private static CmisFileNameParser instance = new CmisFileNameParser(80);
+    private String rootUri = null;
 
     public CmisFileNameParser(int defaultPort) {
         super(defaultPort);
@@ -28,6 +29,13 @@ public class CmisFileNameParser extends URLFileNameParser {
      * code that is copied here.
      */
     public FileName parseUri(VfsComponentContext context, FileName base, String filename) throws FileSystemException {
+
+        if (base == null && rootUri == null) {
+            rootUri = filename;
+            if (rootUri.endsWith("/")) {
+                rootUri = rootUri.substring(0, rootUri.length() - 1);
+            }
+        }
         // FTP URI are generic URI (as per RFC 2396)
         final StringBuffer name = new StringBuffer();
 
@@ -56,6 +64,6 @@ public class CmisFileNameParser extends URLFileNameParser {
                 auth.password,
                 path,
                 fileType,
-                queryString);
+                queryString, rootUri);
     }
 }

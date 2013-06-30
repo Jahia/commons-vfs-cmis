@@ -50,6 +50,12 @@ public class CmisFileProviderTest {
     }
 
     @Test
+    public void testRootParent() throws FileSystemException {
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
+        Assert.assertNull("Parent of root file should be null", rootFile.getParent());
+    }
+
+    @Test
     public void testRecursiveWalk() throws FileSystemException {
         FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         int depth = 4;

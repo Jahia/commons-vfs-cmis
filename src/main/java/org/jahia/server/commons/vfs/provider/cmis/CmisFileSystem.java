@@ -53,7 +53,9 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         // make sure we call the session first to initialize all session variables (including cmisEntryPointUri)
         Session cmisSession = getSession(cmisFileName);
         boolean byID = true;
-        if (cmisUri.startsWith(cmisEntryPointUri)) {
+        if (cmisUri.equals(cmisEntryPointUri)) {
+            return rootCmisFileObject;
+        } else if (cmisUri.startsWith(cmisEntryPointUri)) {
             cmisPath = cmisUri.substring(cmisEntryPointUri.length());
             byID = false;
             if (cmisPath.length() == 0) {
