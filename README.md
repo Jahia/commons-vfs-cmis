@@ -60,7 +60,28 @@ stax2-api-3.1.1.jar
 streambuffer-0.9.jar
 woodstox-core-asl-4.2.0.jar
 
-If your application is already using some of these librairies you will have to handle the conflicts manually.
+The easiest way to get all these dependencies is to download the package from the Apache Chemistry project website:
+
+http://www.apache.org/dyn/closer.cgi/chemistry/opencmis/0.9.0/chemistry-opencmis-client-impl-0.9.0-with-dependencies.zip
+
+If your application is already using some of these libraries you will have to handle the conflicts manually. For
+example, for deployment in the Jahia CMS, you will only need to copy the following JARs into the WEB-INF/lib directory:
+
+chemistry-opencmis-client-api-0.9.0.jar
+chemistry-opencmis-client-bindings-0.9.0.jar
+chemistry-opencmis-client-impl-0.9.0.jar
+chemistry-opencmis-commons-api-0.9.0.jar
+chemistry-opencmis-commons-impl-0.9.0.jar
+jaxws-api-2.1.jar
+jaxws-rt-2.1.7.jar
+mimepull-1.3.jar
+resolver-20050927.jar
+saaj-api-1.3.jar
+saaj-impl-1.3.3.jar
+stax-ex-1.2.jar
+stax2-api-3.1.1.jar
+streambuffer-0.9.jar
+woodstox-core-asl-4.2.0.jar
 
 Ideas :
 -------
