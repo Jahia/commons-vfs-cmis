@@ -96,6 +96,10 @@ public class CmisFileSystem extends AbstractFileSystem implements FileSystem {
         return rootCmisFileObject;
     }
 
+    public Session getSession() {
+        return session;
+    }
+
     public Session getSession(CmisFileName cmisFileName) {
         if (session != null) {
             return session;

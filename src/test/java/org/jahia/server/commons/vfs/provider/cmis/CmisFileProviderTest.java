@@ -1,9 +1,9 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.FilesCache;
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.commons.data.RepositoryCapabilities;
+import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
+import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.cache.SoftRefFilesCache;
 import org.apache.commons.vfs.impl.DefaultFileReplicator;
 import org.apache.commons.vfs.impl.DefaultFileSystemManager;
@@ -133,11 +133,19 @@ public class CmisFileProviderTest {
 
     @Test
     public void testEncodingIssues() throws IOException {
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
+        CmisFileSystem cmisFileSystem = (CmisFileSystem) rootFile.getFileSystem();
+        Session cmisSession = cmisFileSystem.getSession();
+        RepositoryInfo repositoryInfo = cmisSession.getRepositoryInfo();
+        if (!"Apache Chemistry OpenCMIS InMemory Repository".equals(repositoryInfo.getName())) {
         long timestamp = System.currentTimeMillis();
         String folderUri = cmisEndPointUri + "commons-vfs-testfolder1-ÇÇÇÇÇ/éàèöäüe-" + timestamp;
         testFolderCreateAndDelete(folderUri);
         String fileUri = cmisEndPointUri + "commons-vfs-testfile-" + timestamp + "-éàè±“#Ç¿.txt";
         testFileCreateAndDelete(fileUri);
+        } else {
+            System.out.println("Skipping encoding test on Apache Chemistry InMemory repository since it doesn't support it!");
+        }
     }
 
     private long walkChildren(FileObject fileObject, int depth) throws FileSystemException {
