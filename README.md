@@ -33,6 +33,35 @@ mvn clean install -Dtest.cmis.uri=cmis://admin:admin@cmis.alfresco.com/cmisatom
 
 More Alfresco CMIS end points are available here : http://cmis.alfresco.com
 
+Deploying to an existing application
+------------------------------------
+
+If you want to deploy this library to an existing application, you will need to deploy the following dependencies
+along with the common-vfs-cmis-VERSION.jar :
+
+activation-1.1.jar
+chemistry-opencmis-client-api-0.9.0.jar
+chemistry-opencmis-client-bindings-0.9.0.jar
+chemistry-opencmis-client-impl-0.9.0.jar
+chemistry-opencmis-commons-api-0.9.0.jar
+chemistry-opencmis-commons-impl-0.9.0.jar
+jaxb-api-2.1.jar
+jaxb-impl-2.1.11.jar
+jaxws-api-2.1.jar
+jaxws-rt-2.1.7.jar
+mimepull-1.3.jar
+resolver-20050927.jar
+saaj-api-1.3.jar
+saaj-impl-1.3.3.jar
+slf4j-api-1.7.5.jar
+stax-api-1.0-2.jar
+stax-ex-1.2.jar
+stax2-api-3.1.1.jar
+streambuffer-0.9.jar
+woodstox-core-asl-4.2.0.jar
+
+If your application is already using some of these librairies you will have to handle the conflicts manually.
+
 Ideas :
 -------
 - We might try to implement searching using a query string such as :
