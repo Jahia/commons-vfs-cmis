@@ -7,6 +7,7 @@ import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.commons.vfs.provider.LayeredFileName;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,11 +24,11 @@ public class CmisOutputStream extends OutputStream {
 
     private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     private CmisFileObject cmisFileObject;
-    private CmisFileSystem cmisFileSystem;
+    private AbstractCmisFileSystem cmisFileSystem;
     private String mimeType;
     private boolean alreadyClosed = false;
 
-    public CmisOutputStream(CmisFileObject cmisFileObject, CmisFileSystem cmisFileSystem, String mimeType) {
+    public CmisOutputStream(CmisFileObject cmisFileObject, AbstractCmisFileSystem cmisFileSystem, String mimeType) {
         this.cmisFileObject = cmisFileObject;
         this.cmisFileSystem = cmisFileSystem;
         this.mimeType = mimeType;
@@ -45,21 +46,21 @@ public class CmisOutputStream extends OutputStream {
             return;
         }
         if (cmisFileObject.getCmisObject() == null) {
-            CmisFileName cmisFileName = (CmisFileName) cmisFileObject.getName();
-            CmisFileObject parentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(cmisFileName.getParent());
+            LayeredFileName layeredFileName = (LayeredFileName) cmisFileObject.getName();
+            CmisFileObject parentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(layeredFileName.getParent());
             if (parentCmisFileObject.getCmisObject() instanceof Folder) {
                 Folder parentFolder = (Folder) parentCmisFileObject.getCmisObject();
 
                 byte[] byteArray = byteArrayOutputStream.toByteArray();
                 byteArrayOutputStream.close();
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
-                ContentStream contentStream = cmisFileSystem.getSession(cmisFileName).getObjectFactory().createContentStream(cmisFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
+                ContentStream contentStream = cmisFileSystem.getSession().getObjectFactory().createContentStream(layeredFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
 
                 Map<String, String> documentProperties = new HashMap<String, String>();
                 documentProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
-                documentProperties.put(PropertyIds.NAME, cmisFileName.getBaseName());
+                documentProperties.put(PropertyIds.NAME, layeredFileName.getBaseName());
 
-                DocumentType documentType = (DocumentType) cmisFileSystem.getSession(cmisFileName).getTypeDefinition("cmis:document");
+                DocumentType documentType = (DocumentType) cmisFileSystem.getSession().getTypeDefinition("cmis:document");
                 Document document = null;
                 if (documentType.isVersionable()) {
                     document = parentFolder.createDocument(documentProperties, contentStream, VersioningState.MAJOR);
@@ -69,17 +70,17 @@ public class CmisOutputStream extends OutputStream {
                 cmisFileObject.setCmisObject(document);
             }
         } else {
-            CmisFileName cmisFileName = (CmisFileName) cmisFileObject.getName();
+            LayeredFileName layeredFileName = (LayeredFileName) cmisFileObject.getName();
             Document document = (Document) cmisFileObject.getCmisObject();
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             byteArrayOutputStream.close();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
-            ContentStream contentStream = cmisFileSystem.getSession(cmisFileName).getObjectFactory().createContentStream(cmisFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
-            DocumentType documentType = (DocumentType) cmisFileSystem.getSession(cmisFileName).getTypeDefinition("cmis:document");
+            ContentStream contentStream = cmisFileSystem.getSession().getObjectFactory().createContentStream(layeredFileName.getBaseName(), byteArrayOutputStream.size(), mimeType, byteArrayInputStream);
+            DocumentType documentType = (DocumentType) cmisFileSystem.getSession().getTypeDefinition("cmis:document");
             if (documentType.isVersionable()) {
-                document = (Document) cmisFileSystem.getSession(cmisFileName).getObject(document.checkOut());
+                document = (Document) cmisFileSystem.getSession().getObject(document.checkOut());
                 ObjectId objectId = document.checkIn(true, null, contentStream, "VFS update");
-                cmisFileObject.setCmisObject(cmisFileSystem.getSession(cmisFileName).getObject(objectId));
+                cmisFileObject.setCmisObject(cmisFileSystem.getSession().getObject(objectId));
             } else {
                 document.setContentStream(contentStream, true);
             }

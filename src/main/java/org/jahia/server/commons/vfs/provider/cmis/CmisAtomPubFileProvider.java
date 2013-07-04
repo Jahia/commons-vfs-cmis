@@ -1,20 +1,22 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
 import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.AbstractLayeredFileProvider;
 import org.apache.commons.vfs.provider.AbstractOriginatingFileProvider;
 import org.apache.commons.vfs.provider.FileProvider;
-import org.apache.commons.vfs.provider.LayeredFileName;
+import org.apache.commons.vfs.provider.url.UrlFileNameParser;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 /**
- * A Common VFS provider implementation for CMIS
+ * Created with IntelliJ IDEA.
+ * User: loom
+ * Date: 04.07.13
+ * Time: 11:30
+ * To change this template use File | Settings | File Templates.
  */
-public class CmisFileProvider extends AbstractLayeredFileProvider
-        implements FileProvider {
+public class CmisAtomPubFileProvider extends AbstractOriginatingFileProvider implements FileProvider {
 
     protected final static Collection capabilities = Collections.unmodifiableCollection(Arrays.asList(new Capability[]
             {
@@ -32,16 +34,14 @@ public class CmisFileProvider extends AbstractLayeredFileProvider
                     Capability.RANDOM_ACCESS_WRITE
             }));
 
-    public CmisFileProvider() {
+    public CmisAtomPubFileProvider() {
         super();
+        setFileNameParser(new UrlFileNameParser());
     }
 
     @Override
-    protected FileSystem doCreateFileSystem(String scheme,
-                                            FileObject file, FileSystemOptions fileSystemOptions) throws FileSystemException {
-        final FileName rootName =
-            new LayeredFileName(scheme, file.getName(), FileName.ROOT_PATH, FileType.FOLDER);
-        return new CmisFileSystem(rootName, file, fileSystemOptions);
+    protected FileSystem doCreateFileSystem(FileName rootName, FileSystemOptions fileSystemOptions) throws FileSystemException {
+        return new CmisAtomPubFileSystem(rootName, null, fileSystemOptions);
     }
 
     public Collection getCapabilities() {

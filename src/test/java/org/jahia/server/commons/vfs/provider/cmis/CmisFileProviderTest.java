@@ -8,6 +8,7 @@ import org.apache.commons.vfs.cache.SoftRefFilesCache;
 import org.apache.commons.vfs.impl.DefaultFileReplicator;
 import org.apache.commons.vfs.impl.DefaultFileSystemManager;
 import org.apache.commons.vfs.impl.PrivilegedFileReplicator;
+import org.apache.commons.vfs.provider.http.HttpFileProvider;
 import org.apache.commons.vfs.provider.local.DefaultLocalFileProvider;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -33,7 +34,7 @@ public class CmisFileProviderTest {
     private static Thread[] startThreadSnapshot;
     private static Thread[] endThreadSnapshot;
 
-    private static String cmisEndPointUri = "cmis://repo.opencmis.org/inmemory/atom/";
+    private static String cmisEndPointUri = "cmis:atompub://repo.opencmis.org/inmemory/atom/";
 
     @Test
     public void testConnection() throws FileSystemException {
@@ -184,6 +185,7 @@ public class CmisFileProviderTest {
 
         manager.init();
         manager.addProvider("cmis", new CmisFileProvider());
+        manager.addProvider("atompub", new CmisAtomPubFileProvider());
 
         String testCmisUri = System.getProperty("test.cmis.uri");
         if (testCmisUri != null) {

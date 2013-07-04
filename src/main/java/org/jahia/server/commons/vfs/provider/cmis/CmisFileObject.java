@@ -4,9 +4,12 @@ import org.apache.chemistry.opencmis.client.api.*;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.provider.AbstractFileObject;
 import org.apache.commons.vfs.provider.AbstractFileSystem;
+import org.apache.commons.vfs.provider.GenericFileName;
+import org.apache.commons.vfs.provider.UriParser;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,12 +25,14 @@ public class CmisFileObject extends AbstractFileObject
         implements FileObject {
 
     private CmisObject cmisObject;
-    private CmisFileSystem cmisFileSystem;
+    private AbstractCmisFileSystem cmisFileSystem;
+    private CmisAtomPubFileSystem cmisBindingFileSystem;
 
-    protected CmisFileObject(FileName name, AbstractFileSystem fs, CmisObject cmisObject) {
+    protected CmisFileObject(FileName name, AbstractFileSystem fs, CmisObject cmisObject, FileName rootName, CmisAtomPubFileSystem cmisBindingFileSystem) throws FileSystemException {
         super(name, fs);
         this.cmisObject = cmisObject;
-        this.cmisFileSystem = (CmisFileSystem) fs;
+        this.cmisFileSystem = (AbstractCmisFileSystem) fs;
+        this.cmisBindingFileSystem = cmisBindingFileSystem;
     }
 
     public CmisObject getCmisObject() {
@@ -36,6 +41,10 @@ public class CmisFileObject extends AbstractFileObject
 
     public void setCmisObject(CmisObject cmisObject) {
         this.cmisObject = cmisObject;
+    }
+
+    public CmisAtomPubFileSystem getCmisBindingFileSystem() {
+        return cmisBindingFileSystem;
     }
 
     @Override
@@ -111,13 +120,12 @@ public class CmisFileObject extends AbstractFileObject
 
     @Override
     protected void doCreateFolder() throws Exception {
-        CmisFileName cmisFileName = (CmisFileName) getName();
-        CmisFileObject parentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(cmisFileName.getParent());
+        CmisFileObject parentCmisFileObject = (CmisFileObject) cmisFileSystem.resolveFile(getName().getParent());
         if (parentCmisFileObject.cmisObject instanceof Folder) {
             Folder parentFolder = (Folder) parentCmisFileObject.cmisObject;
             Map<String, String> folderProperties = new HashMap<String, String>();
             folderProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
-            folderProperties.put(PropertyIds.NAME, cmisFileName.getBaseName());
+            folderProperties.put(PropertyIds.NAME, getName().getBaseName());
             cmisObject = parentFolder.createFolder(folderProperties);
         }
     }
