@@ -85,6 +85,12 @@ stax2-api-3.1.1.jar
 streambuffer-0.9.jar
 woodstox-core-asl-4.2.0.jar
 
+Also, make sure you put a trailing "!" if mounting the file system with Jahia, as in the following example :
+
+cmis:atompub://admin:admin@10.0.1.76:8080/alfresco/cmisatom!
+
+Otherwise it will not work properly.
+
 Ideas :
 -------
 - We might try to implement searching using a query string such as :
