@@ -91,19 +91,19 @@ Also, make sure you put a trailing "!" if mounting the file system with Jahia, a
 
 Otherwise it will not work properly.
 
-Ideas :
--------
-- We might try to implement searching using a query string such as :
-  cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom!/?sql=SELECT * FROM cmis:document
-  or something like that. Full text queries could use a "q" parameter such as :
-  cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom!/?q=john*
+Ideas
+-----
 
-Performance:
-------------
+- We might try to implement searching using a query string such as :
+    cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom!/?sql=SELECT * FROM cmis:document
+  or something like that. Full text queries could use a "q" parameter such as :
+    cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom!/?q=john*
+
+Performance
+-----------
 Walking the tree can be slow. Here is a result using a fresh new local install of Alfresco and a tree walk :
 Walked 71 children in 13150ms.
 
 So as much as possible tree walks should be avoided.
 
 Contributors are more than welcome !
-
