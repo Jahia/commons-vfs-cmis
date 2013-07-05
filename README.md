@@ -16,20 +16,22 @@ There is a lot do to to make this implementation usable :
 - Support authentication
 - Implement proper reading/writing support for all file operations
 - Implement file content attributes mapping to CMIS properties (but can we do this for folders ?)
+- Still need to properly handle file name encoding/decoding, as for the moment it doesn't work out of the box with
+characters such as ?,!, etc...
 
 Of course this implementation will never be capable of supporting searching, since Commons VFS doesn't offer an API
 for that.
 
 By default the test execute against the in-memory OpenCMIS Atom repository available at the URL :
 
-cmis://repo.opencmis.org/inmemory/atom/
+cmis:atompub://repo.opencmis.org/inmemory/atom/
 
 (please note that these are VFS URLs, not real URLs, that are simply real endpoint URL where the scheme has been
 changed from "http" to "cmis".
 
 But other repositories may be used by changing the URI in a Maven command line parameter, such as :
 
-mvn clean install -Dtest.cmis.uri=cmis://admin:admin@cmis.alfresco.com/cmisatom
+mvn clean install -Dtest.cmis.uri=cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom
 
 More Alfresco CMIS end points are available here : http://cmis.alfresco.com
 
@@ -86,9 +88,9 @@ woodstox-core-asl-4.2.0.jar
 Ideas :
 -------
 - We might try to implement searching using a query string such as :
-  cmis://admin:admin@cmis.alfresco.com/cmisatom?sql=SELECT * FROM cmis:document
+  cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom!/?sql=SELECT * FROM cmis:document
   or something like that. Full text queries could use a "q" parameter such as :
-  cmis://admin:admin@cmis.alfresco.com/cmisatom?q=john*
+  cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom!/?q=john*
 
 Performance:
 ------------

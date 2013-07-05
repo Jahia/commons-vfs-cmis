@@ -1,13 +1,13 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
-import org.apache.chemistry.opencmis.client.api.*;
+import org.apache.chemistry.opencmis.client.api.Folder;
+import org.apache.chemistry.opencmis.client.api.Repository;
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.AbstractFileSystem;
-import org.apache.commons.vfs.provider.LayeredFileName;
 import org.apache.commons.vfs.provider.URLFileName;
 import org.apache.commons.vfs.provider.UriParser;
 
@@ -17,11 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: loom
- * Date: 04.07.13
- * Time: 11:32
- * To change this template use File | Settings | File Templates.
+ * The Cmis AtomPub Binding Common VFS FileSystem implementation
  */
 public class CmisAtomPubFileSystem extends AbstractCmisFileSystem implements FileSystem {
 
@@ -37,7 +33,6 @@ public class CmisAtomPubFileSystem extends AbstractCmisFileSystem implements Fil
     protected CmisAtomPubFileSystem(FileName rootName, FileObject parentLayer, FileSystemOptions fileSystemOptions) {
         super(rootName, parentLayer, fileSystemOptions);
         System.out.println("rootName=" + rootName);
-        System.out.println("parentLayer=" + parentLayer);
         String bindingType = CmisFileSystemConfigBuilder.getInstance().getSessionParameter(fileSystemOptions, SessionParameter.BINDING_TYPE);
         if (BindingType.ATOMPUB.value().equals(bindingType)) {
             cmisParameters.put(SessionParameter.ATOMPUB_URL, CmisFileSystemConfigBuilder.getInstance().getSessionParameter(fileSystemOptions, SessionParameter.ATOMPUB_URL));
@@ -56,52 +51,17 @@ public class CmisAtomPubFileSystem extends AbstractCmisFileSystem implements Fil
 
     @Override
     protected FileObject createFile(FileName fileName) throws Exception {
-        if (fileName instanceof LayeredFileName) {
-            LayeredFileName layeredFileName = (LayeredFileName) fileName;
-            String cmisUri = getCmisURI(layeredFileName);
-            String cmisPath = null;
-            // make sure we call the session first to initialize all session variables (including cmisEntryPointUri)
-            Session cmisSession = getSession(layeredFileName);
-            boolean byID = true;
-            if (cmisUri.equals(cmisEntryPointUri)) {
-                return rootCmisFileObject;
-            } else if (cmisUri.startsWith(cmisEntryPointUri)) {
-                cmisPath = cmisUri.substring(cmisEntryPointUri.length());
-                byID = false;
-                if (cmisPath.length() == 0) {
-                    cmisPath = "/";
-                    byID = false;
-                }
-            }
-            CmisObject cmisObject = null;
-            try {
-                if (byID) {
-                    cmisObject = cmisSession.getObject(cmisUri);
-                } else {
-                    /*
-                    String[] pathParts = cmisPath.split("/");
-                    StringBuilder encodedPath = new StringBuilder();
-                    encodedPath.append("/");
-                    for (String pathPart : pathParts) {
-                        encodedPath.append(URLEncoder.encode(pathPart, "UTF-8"));
-                        encodedPath.append("/");
-                    }
-                    */
-                    StringBuilder encodedPath = new StringBuilder(cmisPath);
-                    cmisObject = cmisSession.getObjectByPath(encodedPath.toString());
-                }
-            } catch (CmisObjectNotFoundException confe) {
-                cmisObject = null;
-            }
-            return new CmisFileObject(fileName, this, cmisObject, getRootName(), this);
-        } else {
-            String cmisUri = getCmisURI((URLFileName) fileName);
-            String cmisPath = null;
-            // make sure we call the session first to initialize all session variables (including cmisEntryPointUri)
-            Session cmisSession = getSession(fileName);
-
-            return new CmisFileObject(fileName, this, cmisSession.getRootFolder(), getRootName(), this);
+        // make sure we call the session first to initialize all session variables (including cmisEntryPointUri)
+        if (session == null) {
+            getSession(fileName);
         }
+
+        return getRoot();
+    }
+
+    @Override
+    public FileObject getRoot() throws FileSystemException {
+        return rootCmisFileObject;
     }
 
     @Override
@@ -113,20 +73,14 @@ public class CmisAtomPubFileSystem extends AbstractCmisFileSystem implements Fil
         return session;
     }
 
-    protected void appendCredentials(URLFileName outerName, StringBuffer buffer, boolean addPassword)
-    {
-        if (outerName.getUserName() != null && outerName.getUserName().length() != 0)
-        {
+    protected void appendCredentials(URLFileName outerName, StringBuffer buffer, boolean addPassword) {
+        if (outerName.getUserName() != null && outerName.getUserName().length() != 0) {
             UriParser.appendEncoded(buffer, outerName.getUserName(), USERNAME_RESERVED);
-            if (outerName.getPassword() != null && outerName.getPassword().length() != 0)
-            {
+            if (outerName.getPassword() != null && outerName.getPassword().length() != 0) {
                 buffer.append(':');
-                if (addPassword)
-                {
+                if (addPassword) {
                     UriParser.appendEncoded(buffer, outerName.getPassword(), PASSWORD_RESERVED);
-                }
-                else
-                {
+                } else {
                     buffer.append("*****");
                 }
             }
@@ -134,45 +88,25 @@ public class CmisAtomPubFileSystem extends AbstractCmisFileSystem implements Fil
         }
     }
 
-    public String getCmisURI(LayeredFileName layeredFileName) {
-        StringBuffer buffer = new StringBuffer();
-            URLFileName outerName = (URLFileName) layeredFileName.getOuterName();
-            buffer.append("http");
-            buffer.append("://");
-            appendCredentials(outerName, buffer, true);
-            buffer.append(outerName.getHostName());
-            if (outerName.getPort() != outerName.getDefaultPort()) {
-                buffer.append(':');
-                buffer.append(outerName.getPort());
-            }
-            buffer.append(outerName.getPath());
-            buffer.append(layeredFileName.getPath());
-            if (outerName.getQueryString() != null) {
-                buffer.append("?");
-                buffer.append(outerName.getQueryString());
-            }
-        return buffer.toString();
-    }
-
     public String getCmisURI(URLFileName urlFileName) {
         StringBuffer buffer = new StringBuffer();
-            buffer.append("http");
-            buffer.append("://");
-            appendCredentials(urlFileName, buffer, true);
-            buffer.append(urlFileName.getHostName());
-            if (urlFileName.getPort() != urlFileName.getDefaultPort()) {
-                buffer.append(':');
-                buffer.append(urlFileName.getPort());
-            }
-            buffer.append(urlFileName.getPath());
-            if (urlFileName.getQueryString() != null) {
-                buffer.append("?");
-                buffer.append(urlFileName.getQueryString());
-            }
+        buffer.append("http");
+        buffer.append("://");
+        appendCredentials(urlFileName, buffer, true);
+        buffer.append(urlFileName.getHostName());
+        if (urlFileName.getPort() != urlFileName.getDefaultPort()) {
+            buffer.append(':');
+            buffer.append(urlFileName.getPort());
+        }
+        buffer.append(urlFileName.getPath());
+        if (urlFileName.getQueryString() != null) {
+            buffer.append("?");
+            buffer.append(urlFileName.getQueryString());
+        }
         return buffer.toString();
     }
 
-    public Session getSession(FileName fileName) throws FileSystemException {
+    protected Session getSession(FileName fileName) throws FileSystemException {
         if (session != null) {
             return session;
         }

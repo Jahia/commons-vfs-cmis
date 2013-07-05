@@ -5,4 +5,9 @@
         <if-available class-name="org.apache.chemistry.opencmis.client.api.CmisObject"/>
     </provider>
 
+    <provider class-name="org.jahia.server.commons.vfs.provider.cmis.CmisAtomPubFileProvider">
+        <scheme name="atompub"/>
+        <if-available class-name="org.apache.chemistry.opencmis.client.api.CmisObject"/>
+    </provider>
+
 </providers>

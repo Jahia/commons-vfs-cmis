@@ -8,7 +8,6 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.provider.AbstractFileObject;
 import org.apache.commons.vfs.provider.AbstractFileSystem;
-import org.apache.commons.vfs.provider.GenericFileName;
 import org.apache.commons.vfs.provider.UriParser;
 
 import java.io.InputStream;
@@ -84,7 +83,8 @@ public class CmisFileObject extends AbstractFileObject
                 if (childCmisObject instanceof FileableCmisObject) {
                     FileableCmisObject fileableCmisObject = (FileableCmisObject) childCmisObject;
                     if (fileableCmisObject.getName() != null) {
-                        childrenUris.add(fileableCmisObject.getName());
+                        String childName = UriParser.encode(fileableCmisObject.getName(), CmisFileProvider.RESERVED_CHARS);
+                        childrenUris.add(childName);
                     }
                 } else {
                     childrenUris.add("?id=" + childCmisObject.getId());
@@ -125,7 +125,8 @@ public class CmisFileObject extends AbstractFileObject
             Folder parentFolder = (Folder) parentCmisFileObject.cmisObject;
             Map<String, String> folderProperties = new HashMap<String, String>();
             folderProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
-            folderProperties.put(PropertyIds.NAME, getName().getBaseName());
+            String folderName = UriParser.decode(getName().getBaseName());
+            folderProperties.put(PropertyIds.NAME, folderName);
             cmisObject = parentFolder.createFolder(folderProperties);
         }
     }

@@ -1,14 +1,16 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
 import org.apache.chemistry.opencmis.client.api.Session;
-import org.apache.chemistry.opencmis.commons.data.RepositoryCapabilities;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
-import org.apache.commons.vfs.*;
+import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs.FileType;
+import org.apache.commons.vfs.FilesCache;
 import org.apache.commons.vfs.cache.SoftRefFilesCache;
 import org.apache.commons.vfs.impl.DefaultFileReplicator;
 import org.apache.commons.vfs.impl.DefaultFileSystemManager;
 import org.apache.commons.vfs.impl.PrivilegedFileReplicator;
-import org.apache.commons.vfs.provider.http.HttpFileProvider;
+import org.apache.commons.vfs.provider.UriParser;
 import org.apache.commons.vfs.provider.local.DefaultLocalFileProvider;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -34,7 +36,7 @@ public class CmisFileProviderTest {
     private static Thread[] startThreadSnapshot;
     private static Thread[] endThreadSnapshot;
 
-    private static String cmisEndPointUri = "cmis:atompub://repo.opencmis.org/inmemory/atom/";
+    private static String cmisEndPointUri = "cmis:atompub://repo.opencmis.org/inmemory/atom";
 
     @Test
     public void testConnection() throws FileSystemException {
@@ -84,16 +86,17 @@ public class CmisFileProviderTest {
     public void testFolderCreate() throws FileSystemException {
         FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         long timestamp = System.currentTimeMillis();
-        String folderUri = cmisEndPointUri + "commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp;
-        testFolderCreateAndDelete(folderUri);
+        String folderUri = cmisEndPointUri + "!/commons-vfs-testfolder1/subfolder1/subfolder2-" + timestamp;
+        testFolderCreateAndDelete(folderUri, "subfolder2-" + timestamp);
     }
 
-    private void testFolderCreateAndDelete(String folderUri) throws FileSystemException {
+    private void testFolderCreateAndDelete(String folderUri, String expectedFolderBaseName) throws FileSystemException {
         FileObject newFolder = manager.resolveFile(folderUri);
         Assert.assertFalse("Folder " + newFolder + " already exists", newFolder.exists());
         newFolder.createFolder();
         newFolder = manager.resolveFile(folderUri);
         Assert.assertTrue("New folder " + newFolder + " does not exist !", newFolder.exists());
+        Assert.assertEquals("New folder " + newFolder + " does not have expected name", expectedFolderBaseName, newFolder.getName().getBaseName());
         newFolder.delete();
         newFolder = manager.resolveFile(folderUri);
         Assert.assertFalse("New folder " + newFolder + " still exists !", newFolder.exists());
@@ -102,11 +105,11 @@ public class CmisFileProviderTest {
     @Test
     public void testFileCreate() throws IOException {
         long timestamp = System.currentTimeMillis();
-        String fileUri = cmisEndPointUri + "commons-vfs-testfile-" + timestamp + ".txt";
-        testFileCreateAndDelete(fileUri);
+        String fileUri = cmisEndPointUri + "!/commons-vfs-testfile-" + timestamp + ".txt";
+        testFileCreateAndDelete(fileUri, "commons-vfs-testfile-" + timestamp + ".txt");
     }
 
-    private void testFileCreateAndDelete(String fileUri) throws IOException {
+    private void testFileCreateAndDelete(String fileUri, String expectedFileBaseName) throws IOException {
         FileObject newFile = manager.resolveFile(fileUri);
         newFile.createFile();
         OutputStream outputStream = newFile.getContent().getOutputStream();
@@ -119,6 +122,7 @@ public class CmisFileProviderTest {
         }
         outputStream.close();
         newFile = manager.resolveFile(fileUri);
+        Assert.assertEquals("New file " + fileUri + " does not have the expected name!", expectedFileBaseName, newFile.getName().getBaseName());
         InputStream inputStream = newFile.getContent().getInputStream();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         while ((curByte = inputStream.read()) > -1) {
@@ -139,11 +143,32 @@ public class CmisFileProviderTest {
         Session cmisSession = cmisFileSystem.getSession();
         RepositoryInfo repositoryInfo = cmisSession.getRepositoryInfo();
         if (!"Apache Chemistry OpenCMIS InMemory Repository".equals(repositoryInfo.getName())) {
-        long timestamp = System.currentTimeMillis();
-        String folderUri = cmisEndPointUri + "commons-vfs-testfolder1-ÇÇÇÇÇ/éàèöäüe-" + timestamp;
-        testFolderCreateAndDelete(folderUri);
-        String fileUri = cmisEndPointUri + "commons-vfs-testfile-" + timestamp + "-éàè±“#Ç¿.txt";
-        testFileCreateAndDelete(fileUri);
+            long timestamp = System.currentTimeMillis();
+            String folderUri = cmisEndPointUri + "!/commons-vfs-testfolder1-ÇÇÇÇÇ/éàèöäüe-" + timestamp;
+            testFolderCreateAndDelete(folderUri, "éàèöäüe-" + timestamp);
+            String fileUri = cmisEndPointUri + "!/commons-vfs-testfile-" + timestamp + "-éàè±“#Ç¿.txt";
+            testFileCreateAndDelete(fileUri, "commons-vfs-testfile-" + timestamp + "-éàè±“#Ç¿.txt");
+        } else {
+            System.out.println("Skipping encoding test on Apache Chemistry InMemory repository since it doesn't support it!");
+        }
+    }
+
+    @Test
+    public void testExclamationPointInFileName() throws IOException {
+        FileObject rootFile = manager.resolveFile(cmisEndPointUri);
+        CmisFileSystem cmisFileSystem = (CmisFileSystem) rootFile.getFileSystem();
+        Session cmisSession = cmisFileSystem.getSession();
+        RepositoryInfo repositoryInfo = cmisSession.getRepositoryInfo();
+        if (!"Apache Chemistry OpenCMIS InMemory Repository".equals(repositoryInfo.getName())) {
+            long timestamp = System.currentTimeMillis();
+            String rawFolderName = "ExclamationPointsInFolderName!!!-" + timestamp;
+            String folderName = UriParser.encode(rawFolderName, CmisFileProvider.RESERVED_CHARS);
+            String folderUri = cmisEndPointUri + "!/commons-vfs-testfolder1/" + folderName;
+            testFolderCreateAndDelete(folderUri, folderName);
+            String rawFileName = "commons-vfs-testfile-" + timestamp + "-with!ExclamationPoint!.txt";
+            String fileName = UriParser.encode(rawFileName, CmisFileProvider.RESERVED_CHARS);
+            String fileUri = cmisEndPointUri + "!/" + fileName;
+            testFileCreateAndDelete(fileUri, fileName);
         } else {
             System.out.println("Skipping encoding test on Apache Chemistry InMemory repository since it doesn't support it!");
         }

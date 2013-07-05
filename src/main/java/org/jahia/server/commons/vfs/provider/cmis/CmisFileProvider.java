@@ -2,7 +2,6 @@ package org.jahia.server.commons.vfs.provider.cmis;
 
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.AbstractLayeredFileProvider;
-import org.apache.commons.vfs.provider.AbstractOriginatingFileProvider;
 import org.apache.commons.vfs.provider.FileProvider;
 import org.apache.commons.vfs.provider.LayeredFileName;
 
@@ -15,6 +14,12 @@ import java.util.Collections;
  */
 public class CmisFileProvider extends AbstractLayeredFileProvider
         implements FileProvider {
+
+    public static final char[] RESERVED_CHARS = new char[]
+            {
+                    // '?', '/', '\\', ' ', '&', '"', '\'', '*', '#', ';', ':', '<', '>', '|', '!'
+                    '!'
+            };
 
     protected final static Collection capabilities = Collections.unmodifiableCollection(Arrays.asList(new Capability[]
             {
@@ -40,7 +45,7 @@ public class CmisFileProvider extends AbstractLayeredFileProvider
     protected FileSystem doCreateFileSystem(String scheme,
                                             FileObject file, FileSystemOptions fileSystemOptions) throws FileSystemException {
         final FileName rootName =
-            new LayeredFileName(scheme, file.getName(), FileName.ROOT_PATH, FileType.FOLDER);
+                new LayeredFileName(scheme, file.getName(), FileName.ROOT_PATH, FileType.FOLDER);
         return new CmisFileSystem(rootName, file, fileSystemOptions);
     }
 

@@ -8,6 +8,7 @@ import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.commons.vfs.provider.LayeredFileName;
+import org.apache.commons.vfs.provider.UriParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,8 @@ public class CmisOutputStream extends OutputStream {
 
                 Map<String, String> documentProperties = new HashMap<String, String>();
                 documentProperties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
-                documentProperties.put(PropertyIds.NAME, layeredFileName.getBaseName());
+                String fileName = UriParser.decode(layeredFileName.getBaseName());
+                documentProperties.put(PropertyIds.NAME, fileName);
 
                 DocumentType documentType = (DocumentType) cmisFileSystem.getSession().getTypeDefinition("cmis:document");
                 Document document = null;

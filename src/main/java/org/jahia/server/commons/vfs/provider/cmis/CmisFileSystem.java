@@ -1,20 +1,13 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
-import org.apache.chemistry.opencmis.client.api.*;
-import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
-import org.apache.chemistry.opencmis.commons.SessionParameter;
-import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.AbstractFileSystem;
 import org.apache.commons.vfs.provider.LayeredFileName;
-import org.apache.commons.vfs.provider.URLFileName;
 import org.apache.commons.vfs.provider.UriParser;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The commons VFS file system implementation for CMIS
@@ -28,7 +21,17 @@ public class CmisFileSystem extends AbstractCmisFileSystem implements FileSystem
     @Override
     protected FileObject createFile(FileName fileName) throws Exception {
         CmisFileObject parentLayer = (CmisFileObject) getParentLayer();
-        return parentLayer.getCmisBindingFileSystem().createFile(fileName);
+        LayeredFileName layeredFileName = (LayeredFileName) fileName;
+        // make sure we call the session first to initialize all session variables (including cmisEntryPointUri)
+        Session cmisSession = parentLayer.getCmisBindingFileSystem().getSession(layeredFileName);
+        CmisObject cmisObject = null;
+        try {
+            String decodedPath = UriParser.decode(fileName.getPath());
+            cmisObject = cmisSession.getObjectByPath(decodedPath);
+        } catch (CmisObjectNotFoundException confe) {
+            cmisObject = null;
+        }
+        return new CmisFileObject(fileName, this, cmisObject, getRootName(), parentLayer.getCmisBindingFileSystem());
     }
 
     public Session getSession() throws FileSystemException {
