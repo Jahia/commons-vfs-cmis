@@ -24,14 +24,14 @@ for that.
 
 By default the test execute against the in-memory OpenCMIS Atom repository available at the URL :
 
-cmis:atompub://repo.opencmis.org/inmemory/atom/
+    cmis:atompub://repo.opencmis.org/inmemory/atom/
 
 (please note that these are VFS URLs, not real URLs, that are simply real endpoint URL where the scheme has been
 changed from "http" to "cmis".
 
 But other repositories may be used by changing the URI in a Maven command line parameter, such as :
 
-mvn clean install -Dtest.cmis.uri=cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom
+    mvn clean install -Dtest.cmis.uri=cmis:atompub://admin:admin@cmis.alfresco.com/cmisatom
 
 More Alfresco CMIS end points are available here : http://cmis.alfresco.com
 
@@ -41,53 +41,53 @@ Deploying to an existing application
 If you want to deploy this library to an existing application, you will need to deploy the following dependencies
 along with the common-vfs-cmis-VERSION.jar :
 
-activation-1.1.jar
-chemistry-opencmis-client-api-0.9.0.jar
-chemistry-opencmis-client-bindings-0.9.0.jar
-chemistry-opencmis-client-impl-0.9.0.jar
-chemistry-opencmis-commons-api-0.9.0.jar
-chemistry-opencmis-commons-impl-0.9.0.jar
-jaxb-api-2.1.jar
-jaxb-impl-2.1.11.jar
-jaxws-api-2.1.jar
-jaxws-rt-2.1.7.jar
-mimepull-1.3.jar
-resolver-20050927.jar
-saaj-api-1.3.jar
-saaj-impl-1.3.3.jar
-slf4j-api-1.7.5.jar
-stax-api-1.0-2.jar
-stax-ex-1.2.jar
-stax2-api-3.1.1.jar
-streambuffer-0.9.jar
-woodstox-core-asl-4.2.0.jar
+    activation-1.1.jar
+    chemistry-opencmis-client-api-0.9.0.jar
+    chemistry-opencmis-client-bindings-0.9.0.jar
+    chemistry-opencmis-client-impl-0.9.0.jar
+    chemistry-opencmis-commons-api-0.9.0.jar
+    chemistry-opencmis-commons-impl-0.9.0.jar
+    jaxb-api-2.1.jar
+    jaxb-impl-2.1.11.jar
+    jaxws-api-2.1.jar
+    jaxws-rt-2.1.7.jar
+    mimepull-1.3.jar
+    resolver-20050927.jar
+    saaj-api-1.3.jar
+    saaj-impl-1.3.3.jar
+    slf4j-api-1.7.5.jar
+    stax-api-1.0-2.jar
+    stax-ex-1.2.jar
+    stax2-api-3.1.1.jar
+    streambuffer-0.9.jar
+    woodstox-core-asl-4.2.0.jar
 
 The easiest way to get all these dependencies is to download the package from the Apache Chemistry project website:
 
-http://www.apache.org/dyn/closer.cgi/chemistry/opencmis/0.9.0/chemistry-opencmis-client-impl-0.9.0-with-dependencies.zip
+    http://www.apache.org/dyn/closer.cgi/chemistry/opencmis/0.9.0/chemistry-opencmis-client-impl-0.9.0-with-dependencies.zip
 
 If your application is already using some of these libraries you will have to handle the conflicts manually. For
 example, for deployment in the Jahia CMS, you will only need to copy the following JARs into the WEB-INF/lib directory:
 
-chemistry-opencmis-client-api-0.9.0.jar
-chemistry-opencmis-client-bindings-0.9.0.jar
-chemistry-opencmis-client-impl-0.9.0.jar
-chemistry-opencmis-commons-api-0.9.0.jar
-chemistry-opencmis-commons-impl-0.9.0.jar
-jaxws-api-2.1.jar
-jaxws-rt-2.1.7.jar
-mimepull-1.3.jar
-resolver-20050927.jar
-saaj-api-1.3.jar
-saaj-impl-1.3.3.jar
-stax-ex-1.2.jar
-stax2-api-3.1.1.jar
-streambuffer-0.9.jar
-woodstox-core-asl-4.2.0.jar
+    chemistry-opencmis-client-api-0.9.0.jar
+    chemistry-opencmis-client-bindings-0.9.0.jar
+    chemistry-opencmis-client-impl-0.9.0.jar
+    chemistry-opencmis-commons-api-0.9.0.jar
+    chemistry-opencmis-commons-impl-0.9.0.jar
+    jaxws-api-2.1.jar
+    jaxws-rt-2.1.7.jar
+    mimepull-1.3.jar
+    resolver-20050927.jar
+    saaj-api-1.3.jar
+    saaj-impl-1.3.3.jar
+    stax-ex-1.2.jar
+    stax2-api-3.1.1.jar
+    streambuffer-0.9.jar
+    woodstox-core-asl-4.2.0.jar
 
 Also, make sure you put a trailing "!" if mounting the file system with Jahia, as in the following example :
 
-cmis:atompub://admin:admin@10.0.1.76:8080/alfresco/cmisatom!
+    cmis:atompub://admin:admin@10.0.1.76:8080/alfresco/cmisatom!
 
 Otherwise it will not work properly.
 
