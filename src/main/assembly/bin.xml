@@ -29,8 +29,8 @@
       <outputDirectory>docs</outputDirectory>
     </fileSet>
       <fileSet>
-        <directory>${project.build.directory}/dependencies</directory>
-        <outputDirectory>dependences</outputDirectory>
+          <directory>${project.build.directory}/dependencies</directory>
+          <outputDirectory>dependences</outputDirectory>
       </fileSet>
   </fileSets>
 </assembly>
