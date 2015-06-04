@@ -1,50 +1,52 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.AbstractOriginatingFileProvider;
-import org.apache.commons.vfs.provider.FileProvider;
-import org.apache.commons.vfs.provider.url.UrlFileNameParser;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-/**
- * Created with IntelliJ IDEA.
- * User: loom
- * Date: 04.07.13
- * Time: 11:30
- * To change this template use File | Settings | File Templates.
- */
-public class CmisAtomPubFileProvider extends AbstractOriginatingFileProvider implements FileProvider {
+import org.apache.commons.vfs2.Capability;
+import org.apache.commons.vfs2.FileName;
+import org.apache.commons.vfs2.FileSystem;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.provider.AbstractFileName;
+import org.apache.commons.vfs2.provider.AbstractOriginatingFileProvider;
+import org.apache.commons.vfs2.provider.FileProvider;
+import org.apache.commons.vfs2.provider.url.UrlFileNameParser;
 
-    protected final static Collection capabilities = Collections.unmodifiableCollection(Arrays.asList(new Capability[]
-            {
-                    Capability.CREATE,
-                    Capability.DELETE,
-                    Capability.RENAME,
-                    Capability.GET_TYPE,
-                    Capability.GET_LAST_MODIFIED,
-                    Capability.LIST_CHILDREN,
-                    Capability.READ_CONTENT,
-                    Capability.URI,
-                    Capability.WRITE_CONTENT,
-                    Capability.APPEND_CONTENT,
-                    Capability.RANDOM_ACCESS_READ,
-                    Capability.RANDOM_ACCESS_WRITE
-            }));
+public class CmisAtomPubFileProvider extends AbstractOriginatingFileProvider implements FileProvider
+{
+	//@formatter:off
+	protected final static Collection<Capability> capabilities = Collections.unmodifiableCollection(Arrays.asList(
+			Capability.CREATE,
+			Capability.DELETE,
+			Capability.RENAME,
+			Capability.GET_TYPE,
+			Capability.GET_LAST_MODIFIED,
+			Capability.LIST_CHILDREN,
+			Capability.READ_CONTENT,
+			Capability.URI,
+			Capability.WRITE_CONTENT,
+			Capability.APPEND_CONTENT,
+			Capability.RANDOM_ACCESS_READ,
+			Capability.RANDOM_ACCESS_WRITE
+	));
+	//@formatter:on
 
-    public CmisAtomPubFileProvider() {
-        super();
-        setFileNameParser(new UrlFileNameParser());
-    }
+	public CmisAtomPubFileProvider()
+	{
+		super();
+		setFileNameParser(new UrlFileNameParser());
+	}
 
-    @Override
-    protected FileSystem doCreateFileSystem(FileName rootName, FileSystemOptions fileSystemOptions) throws FileSystemException {
-        return new CmisAtomPubFileSystem(rootName, null, fileSystemOptions);
-    }
+	@Override
+	protected FileSystem doCreateFileSystem(FileName rootName, FileSystemOptions fileSystemOptions) throws FileSystemException
+	{
+		return new CmisAtomPubFileSystem((AbstractFileName) rootName, null, fileSystemOptions);
+	}
 
-    public Collection getCapabilities() {
-        return capabilities;
-    }
+	public  Collection<Capability> getCapabilities()
+	{
+		return capabilities;
+	}
 }

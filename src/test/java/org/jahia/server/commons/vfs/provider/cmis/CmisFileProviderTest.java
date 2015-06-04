@@ -1,26 +1,31 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.FilesCache;
-import org.apache.commons.vfs.cache.SoftRefFilesCache;
-import org.apache.commons.vfs.impl.DefaultFileReplicator;
-import org.apache.commons.vfs.impl.DefaultFileSystemManager;
-import org.apache.commons.vfs.impl.PrivilegedFileReplicator;
-import org.apache.commons.vfs.provider.UriParser;
-import org.apache.commons.vfs.provider.local.DefaultLocalFileProvider;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileType;
+import org.apache.commons.vfs2.FilesCache;
+import org.apache.commons.vfs2.cache.SoftRefFilesCache;
+import org.apache.commons.vfs2.impl.DefaultFileReplicator;
+import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
+import org.apache.commons.vfs2.impl.PrivilegedFileReplicator;
+import org.apache.commons.vfs2.provider.UriParser;
+import org.apache.commons.vfs2.provider.local.DefaultLocalFileProvider;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A test unit for the CMIS commons VFS provider implementation
@@ -45,7 +50,8 @@ public class CmisFileProviderTest {
     }
 
     @Test
-    public void testRootChildren() throws FileSystemException {
+    public void testRootChildren() throws FileSystemException
+    {
         FileObject rootFile = manager.resolveFile(cmisEndPointUri);
         for (FileObject rootChild : rootFile.getChildren()) {
             System.out.println("child=" + rootChild);

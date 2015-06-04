@@ -1,12 +1,13 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
-import org.apache.commons.vfs.FileSystemConfigBuilder;
-import org.apache.commons.vfs.FileSystemOptions;
+import org.apache.commons.vfs2.FileSystemConfigBuilder;
+import org.apache.commons.vfs2.FileSystemOptions;
 
 /**
  * A file system config builder for CMIS
  */
-public class CmisFileSystemConfigBuilder extends FileSystemConfigBuilder {
+public class CmisFileSystemConfigBuilder extends FileSystemConfigBuilder
+{
 
     final static CmisFileSystemConfigBuilder instance = new CmisFileSystemConfigBuilder();
 

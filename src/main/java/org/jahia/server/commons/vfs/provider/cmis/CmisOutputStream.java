@@ -1,5 +1,12 @@
 package org.jahia.server.commons.vfs.provider.cmis;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.DocumentType;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -7,15 +14,8 @@ import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.apache.commons.vfs.provider.LayeredFileName;
-import org.apache.commons.vfs.provider.UriParser;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.commons.vfs2.provider.LayeredFileName;
+import org.apache.commons.vfs2.provider.UriParser;
 
 /**
  * A custom CMIS output stream implementation to implement the actual document creation when the output stream is
