@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystem;
@@ -38,10 +37,6 @@ public class CmisFileSystem extends AbstractCmisFileSystem implements FileSystem
 			cmisObject = cmisSession.getObjectByPath(decodedPath);
 		}
 		catch (CmisObjectNotFoundException confe)
-		{
-			cmisObject = null;
-		}
-		catch (CmisRuntimeException cre)
 		{
 			cmisObject = null;
 		}
